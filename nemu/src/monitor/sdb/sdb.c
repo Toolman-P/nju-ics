@@ -63,7 +63,27 @@ static int cmd_info(char *args){
 }
 
 static int cmd_x(char *args){
-   
+
+  char *args_end = args+strlen(args);
+
+  if(args==NULL){
+    printf("Not Enough arguments\n");
+    return 0;
+  }
+
+  char *Bytes = strtok(args," ");
+  int bytes = strtol(Bytes,NULL,10);
+  printf("bytes: %d\n",bytes);
+  args = args + strlen(Bytes) + 1;
+
+  if(args>=args_end){
+    printf("Not Enough Arguments.\n");
+    return 0;
+  }
+
+  char *Addr = strtok(args," ");
+  word_t addr = strtoll(Addr,NULL,16);
+  printf("addr: %lx\n",addr);
   return 0;
 }
 

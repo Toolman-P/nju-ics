@@ -90,7 +90,7 @@ static int cmd_x(char *args){
   printf("Starting Addr: 0X%016lx\n",addr);
   printf("Mem: ");
   for(int i=0;i<bytes;i++)
-      printf("%x ",*guest_to_host(addr));
+      printf("%x ",*guest_to_host(addr+i));
   printf("\n");
   printf("-----------END----------\n");
   return 0;

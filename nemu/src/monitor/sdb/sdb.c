@@ -2,7 +2,9 @@
 #include <cpu/cpu.h>
 #include <readline/readline.h>
 #include <readline/history.h>
+
 #include "common.h"
+#include <memory/paddr.h>
 #include "sdb.h"
 
 static int is_batch_mode = false;
@@ -82,15 +84,11 @@ static int cmd_x(char *args){
 
   char *Addr = strtok(args," ");
   word_t addr = strtoll(Addr,NULL,16);
-
+  
   printf("---------MEMORY----------\n");
   printf("Total Bytes: %d\n",bytes);
-  printf("Starting Addr: 0X%016lX\n",addr);
-  printf("Mem: "); 
-
-  char *pt = (char *) addr;
-  printf("%lx",(word_t)pt);
-
+  printf("Starting Addr: 0X%016lx\n",addr);
+  printf("Mem: %x ",*guest_to_host(addr)); 
   printf("\n");
   printf("-----------END----------\n");
   return 0;

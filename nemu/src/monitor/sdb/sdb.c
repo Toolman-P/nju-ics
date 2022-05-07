@@ -56,7 +56,6 @@ static int cmd_info(char *args){
   char *cmd=strtok(args," ");
   if(cmd[0]=='r'){
     isa_reg_display();
-    printf("Register in.");
   }else{
     printf("INFO only supports subcommands(r/w)\n");
   }

@@ -87,12 +87,14 @@ static int cmd_x(char *args){
   printf("Total Bytes: %d\n",bytes);
   printf("Starting Addr: 0X%016lX\n",addr);
   printf("Mem: "); 
-  // char *pt = (char *) addr;
-  // for(int i=0;i<bytes;i++){
-  //   printf("%X ",*(pt+i));
-  // }
+
+  char *pt = (char *) addr;
+  for(int i=0;i<bytes;i++){
+    printf("%X ",*(pt+i));
+  }
+
   printf("\n");
-  printf("----------END----------\n");
+  printf("-----------END----------\n");
   return 0;
 }
 

@@ -92,7 +92,7 @@ static int cmd_x(char *args){
   for(int i=0;i<bytes;i++)
       printf("0x%02x ",*guest_to_host(addr+i));
   printf("\n");
-  printf("-----------END----------\n");
+  printf("-----------END-----------\n");
   return 0;
 }
 

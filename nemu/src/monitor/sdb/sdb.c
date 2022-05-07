@@ -86,7 +86,7 @@ static int cmd_x(char *args){
   printf("---------MEMORY----------\n");
   printf("Total Bytes: %d\n",bytes);
   printf("Starting Addr: 0X%016lX\n",addr);
-  printf("Mem: \n"); 
+  printf("Mem: "); 
   // char *pt = (char *) addr;
   // for(int i=0;i<bytes;i++){
   //   printf("%X ",*(pt+i));

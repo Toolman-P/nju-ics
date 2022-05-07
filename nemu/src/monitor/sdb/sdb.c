@@ -39,6 +39,26 @@ static int cmd_q(char *args) {
 
 static int cmd_help(char *args);
 
+static int cmd_si(char *args){
+  int steps=strtol(args,NULL,10);
+  cpu_exec(steps);
+  return 0;
+}
+
+static int cmd_info(char *args){
+  if(args[0]=='r'){
+    isa_reg_display();
+  }else{
+    printf("INFO only supports subcommands(r/w)\n");
+  }
+  return 0;
+}
+
+static int cmd_x(char *args){
+  
+  return 0;
+}
+
 static struct {
   const char *name;
   const char *description;
@@ -47,6 +67,9 @@ static struct {
   { "help", "Display informations about all supported commands", cmd_help },
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
+  { "si", "Step Into", cmd_si},
+  { "info", "Info status (r/w)", cmd_info},
+  { "x", "Print N bytes starting from the address", cmd_x}
 
   /* TODO: Add more commands */
 

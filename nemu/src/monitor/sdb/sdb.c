@@ -2,6 +2,7 @@
 #include <cpu/cpu.h>
 #include <readline/readline.h>
 #include <readline/history.h>
+#include "common.h"
 #include "sdb.h"
 
 static int is_batch_mode = false;
@@ -47,9 +48,13 @@ static int cmd_si(char *args){
 
 static int cmd_info(char *args){
   
-  if(args==NULL) return 0;
-
-  if(args[0]=='r'){
+  if(args==NULL){
+    printf("Please pass through subcommands");
+    return 0;
+  }
+  
+  char *cmd=strtok(args," ");
+  if(cmd[0]=='r'){
     isa_reg_display();
   }else{
     printf("INFO only supports subcommands(r/w)\n");
@@ -58,6 +63,7 @@ static int cmd_info(char *args){
 }
 
 static int cmd_x(char *args){
+
   
   return 0;
 }

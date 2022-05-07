@@ -83,7 +83,7 @@ static int cmd_x(char *args){
   char *Addr = strtok(args," ");
   word_t addr = strtoll(Addr,NULL,16);
 
-  printf("---------MEMORY----------");
+  printf("---------MEMORY----------\n");
   printf("Total Bytes: %d\n",bytes);
   printf("Starting Addr: 0X%016lX\n",addr);
   printf("Mem: \n"); 

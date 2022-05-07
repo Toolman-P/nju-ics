@@ -67,13 +67,12 @@ static int cmd_x(char *args){
   char *args_end = args+strlen(args);
 
   if(args==NULL){
-    printf("Not Enough arguments\n");
+    printf("Not Enough Arguments\n");
     return 0;
   }
 
   char *Bytes = strtok(args," ");
   int bytes = strtol(Bytes,NULL,10);
-  printf("bytes: %d\n",bytes);
   args = args + strlen(Bytes) + 1;
 
   if(args>=args_end){
@@ -83,7 +82,17 @@ static int cmd_x(char *args){
 
   char *Addr = strtok(args," ");
   word_t addr = strtoll(Addr,NULL,16);
-  printf("addr: %lx\n",addr);
+
+  printf("---------MEMORY----------");
+  printf("Total Bytes: %d\n",bytes);
+  printf("Starting Addr: 0X%016lX\n",addr);
+  printf("Mem: \n"); 
+  char *pt = (char *) addr;
+  for(int i=0;i<bytes;i++){
+    printf("%X ",*(pt+i));
+  }
+  printf("\n");
+  printf("----------END----------\n");
   return 0;
 }
 

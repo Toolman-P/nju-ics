@@ -1,6 +1,6 @@
 #include <cpu/cpu.h>
 #include <isa.h>
-#include <memory/paddr.h>
+#include <memory/paddr.h> 
 #include <readline/history.h>
 #include <readline/readline.h>
 
@@ -56,8 +56,8 @@ static int cmd_info(char *args) {
   char *cmd = strtok(args, " ");
   if (cmd[0] == 'r') {
     isa_reg_display();
-  } else {
-    printf("INFO only supports subcommands(r/w).\n");
+  } else if (cmd[0]=='w'){
+    print_watchlist();    
   }
   return 0;
 }
@@ -94,21 +94,42 @@ static int cmd_x(char *args) {
   return 0;
 }
 
-int cmd_p(char *args) {
-
-  if (args == NULL) {
-    printf("Please provide an expression.\n");
-    return 0;
+word_t eval_expr(char *args){
+  if(args == NULL){
+    panic("Please provide an expression.");
   }
 
-  bool success;
-  word_t val = expr(args, &success);
+  static bool success;
+  word_t val = expr(args,&success);
 
-  if (success) {
-    printf("0x%016lx\n", val);
-  } else {
-    printf("Error: Regex no match.\n");
+  if (success){
+    return val;
+  }else{
+    panic("No Regex match.");
   }
+}
+
+static int cmd_p(char *args) {
+  printf("0x%016lx\n", eval_expr(args));
+  return 0;
+}
+
+static int cmd_w(char *args){
+  
+  assert(strlen(args)<=NR_EX);
+
+  WP *wp=new_wp();
+  wp->value=eval_expr(args);
+  strcpy(wp->expression,args);
+
+  return 0;
+}
+
+static int cmd_d(char *args){
+
+  int no = strtol(args,NULL,10);
+  WP *wp = find_wp(no);
+  free_wp(wp);
   return 0;
 }
 
@@ -124,6 +145,8 @@ static struct {
     {"info", "Info status (r/w)", cmd_info},
     {"x", "Print N bytes starting from the address", cmd_x},
     {"p", "Eval the result of the expression.", cmd_p},
+    {"w", "Set watchpoint on the expression", cmd_w},
+    {"d", "Delete watchpoints", cmd_d},
 
     /* TODO: Add more commands */
 
@@ -152,6 +175,7 @@ static int cmd_help(char *args) {
   }
   return 0;
 }
+
 
 void sdb_set_batch_mode() { is_batch_mode = true; }
 

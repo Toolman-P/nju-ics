@@ -1,11 +1,11 @@
 #include <cpu/cpu.h>
 #include <isa.h>
+#include <memory/paddr.h>
 #include <readline/history.h>
 #include <readline/readline.h>
 
 #include "common.h"
 #include "sdb.h"
-#include <memory/paddr.h>
 
 static int is_batch_mode = false;
 
@@ -94,20 +94,19 @@ static int cmd_x(char *args) {
   return 0;
 }
 
-int cmd_p(char *args){
+int cmd_p(char *args) {
 
-  if(args==NULL){
+  if (args == NULL) {
     printf("Please provide an expression.\n");
     return 0;
   }
 
   bool success;
-  word_t val = expr(args,&success);
+  word_t val = expr(args, &success);
 
-  if (success)
-  {
-    printf("0x%016lx\n",val);
-  }else{
+  if (success) {
+    printf("0x%016lx\n", val);
+  } else {
     printf("Error: Regex no match.\n");
   }
   return 0;
@@ -124,7 +123,7 @@ static struct {
     {"si", "Step Into", cmd_si},
     {"info", "Info status (r/w)", cmd_info},
     {"x", "Print N bytes starting from the address", cmd_x},
-    {"p", "Eval the result of the expression.",cmd_p},
+    {"p", "Eval the result of the expression.", cmd_p},
 
     /* TODO: Add more commands */
 

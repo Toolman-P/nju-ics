@@ -32,14 +32,14 @@ static struct rule {
      * Pay attention to the precedence level of different rules.
      */
 
-    {"\\$ra",'$'},
-    {"\\$sp",'$'},
-    {"\\$gp",'$'},
-    {"\\$tp",'$'},               /* register defined in the src/isa/riscv64(32)/reg.c */
-    {"\\$a[0-7]",'$'},
-    {"\\$t[0-6]",'$'},
-    {"\\$s1[0-1]",'$'},
-    {"\\$s[0-9]",'$'},
+    {"\\$ra", '$'},
+    {"\\$sp", '$'},
+    {"\\$gp", '$'},
+    {"\\$tp", '$'}, /* register defined in the src/isa/riscv64(32)/reg.c */
+    {"\\$a[0-7]", '$'},
+    {"\\$t[0-6]", '$'},
+    {"\\$s1[0-1]", '$'},
+    {"\\$s[0-9]", '$'},
 
     {" +", TK_NOTYPE},                   // spaces
     {"\\(", '('},                        // left parentise
@@ -54,7 +54,7 @@ static struct rule {
     {"!=", TK_UEQ},                      // uneuqal
     {"&&", TK_AND},                      // and
     {"\\|\\|", TK_OR},                   // or
-    {"\\$\\$0",'$'},
+    {"\\$\\$0", '$'},
 };
 
 #define NR_REGEX ARRLEN(rules)
@@ -137,21 +137,26 @@ static bool make_token(char *e) {
 }
 
 int check_parentheses(int l, int r) {
-  int left=256,right=-1;
-  int cnt=0; // the count of left parenthese
-  for(int i=l;i<=r;i++){
-    if(tokens[i].type=='('){
-      if(i<left) left=i;
+  int left = 256, right = -1;
+  int cnt = 0; // the count of left parenthese
+  for (int i = l; i <= r; i++) {
+    if (tokens[i].type == '(') {
+      if (i < left)
+        left = i;
       cnt++;
+    } else if (tokens[i].type == ')') {
+      if (i > right)
+        right = i;
+      if (cnt == 0)
+        panic("Isolated right parenthese.");
+      else
+        cnt--;
     }
-    else if(tokens[i].type==')'){
-        if(i>right) right=i;
-        if(cnt==0) panic("Isolated right parenthese.");
-        else cnt--;
-      }
   }
-  if(cnt>0) panic("Isolated left parenthese detected.");
-  if(left==l&&right==r) return 1;
+  if (cnt > 0)
+    panic("Isolated left parenthese detected.");
+  if (left == l && right == r)
+    return 1;
   return 0;
 }
 
@@ -217,7 +222,7 @@ word_t eval(int l, int r) {
     case TK_NUM_HEX:
       return strtoll(tokens[l].str, NULL, 16);
     case '$':
-      return isa_reg_str2val(tokens[l].str,NULL);
+      return isa_reg_str2val(tokens[l].str, NULL);
     default:
       panic("Not a numeric type.");
     }
@@ -262,7 +267,8 @@ word_t expr(char *e, bool *success) {
   }
 
   for (int i = 0; i < nr_token; i++) {
-    if (i == 0 || !(tokens[i - 1].type == TK_NUM_DEC || tokens[i - 1].type == TK_NUM_HEX)) {
+    if (i == 0 || !(tokens[i - 1].type == TK_NUM_DEC ||
+                    tokens[i - 1].type == TK_NUM_HEX)) {
       if (tokens[i].type == '-')
         tokens[i].type = TK_NEG;
       else if (tokens[i].type == '*')

@@ -4,7 +4,6 @@
 #include <readline/history.h>
 #include <readline/readline.h>
 
-#include "common.h"
 #include "sdb.h"
 
 static int is_batch_mode = false;

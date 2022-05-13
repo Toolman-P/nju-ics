@@ -21,5 +21,5 @@ void free_wp(WP *wp);
 WP** scan_watchpoints(int *total_diff);
 void print_watchlist();
 void print_diffpoint(WP *wp,int *total_diff);
-void diff_watchpoints();
+bool diff_watchpoints();
 #endif

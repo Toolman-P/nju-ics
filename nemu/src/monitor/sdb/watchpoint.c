@@ -86,7 +86,7 @@ void print_watchlist(){
   for(WP *wp = head;wp!=NULL;wp=wp->next){
     word_t val = expr(wp->expression,&success);
     wp->value = val;
-    printf("%d\t%s\t0x%016lx\n",wp->NO,wp->expression,val);
+    printf("%d\t%s\t" FMT_WORD "\n",wp->NO,wp->expression,val);
   }
 
 }
@@ -98,17 +98,18 @@ void print_diffpoints(WP **diff,int *total_diff){
   printf("Num\tWhat\tChange\t\n");
   for(int i=0;i<*total_diff;i++){
     WP *wp = diff[i];
-    printf("%d\t%s\t0x%016lx->0x%016lx\n",wp->NO,wp->expression,wp->prev,wp->value); 
+    printf("%d\t%s\t"FMT_WORD"->"FMT_WORD"\n",wp->NO,wp->expression,wp->prev,wp->value); 
   }
 
 }
 
-void diff_watchpoints(){
+bool diff_watchpoints(){
   static int total_diff = 0;
   WP ** diff = scan_watchpoints(&total_diff);
   if(total_diff>0){
     Log("Detected watchpoints changes.");
     print_diffpoints(diff,&total_diff);
+    return true;
   }
+  return false;
 }
-

@@ -84,7 +84,7 @@ static int cmd_x(char *args) {
 
   printf("---------MEMORY----------\n");
   printf("Total Bytes: %d\n", bytes);
-  printf("Starting Addr: 0x%016lx\n", addr);
+  printf("Starting Addr:" FMT_WORD "\n", addr);
   printf("Mem: ");
   for (int i = 0; i < bytes; i++)
     printf("0x%02x ", *guest_to_host(addr + i));
@@ -109,7 +109,7 @@ word_t eval_expr(char *args){
 }
 
 static int cmd_p(char *args) {
-  printf("0x%016lx\n", eval_expr(args));
+  printf(FMT_WORD "\n", eval_expr(args));
   return 0;
 }
 

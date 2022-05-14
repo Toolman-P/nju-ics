@@ -9,10 +9,22 @@ const char *regs[] = {
 };
 
 void isa_reg_display() {
-  printf("-------REG INFO-------\n");
-  printf("---------END----------\n ");
+  printf("----------------------------------REG INFO-----------------------------\n");
+  for(int i=0;i<32;i+=4){
+    for(int j=i;j<i+4;j++)
+      printf("%s = "FMT_WORD "\t",regs[j],gpr(j));
+    printf("\n");
+  }
+  printf("------------------------------------END--------------------------------\n ");
 }
 
 word_t isa_reg_str2val(const char *s, bool *success) {
+
+  for(int i=0;i<31;i++){
+    if(strcmp(s,regs[i])==0){
+      return gpr(i);
+    }
+  }
+
   return 0;
 }

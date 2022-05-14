@@ -10,6 +10,7 @@
 #define c_and(a, b) ((a) & (b))
 #define c_or(a, b)  ((a) | (b))
 #define c_xor(a, b) ((a) ^ (b))
+#define c_neg(a) (-(a))
 #define c_sll(a, b) ((a) << ((b) & c_shift_mask))
 #define c_srl(a, b) ((a) >> ((b) & c_shift_mask))
 #define c_sra(a, b) ((sword_t)(a) >> ((b) & c_shift_mask))
@@ -58,6 +59,32 @@ static inline bool interpret_relop(uint32_t relop, const rtlreg_t src1, const rt
     case RELOP_GEU: return src1 >= src2;
     default: panic("unsupport relop = %d", relop);
   }
+}
+
+static inline rtlreg_t c_sext(const rtlreg_t src, const int width){
+  
+  int bits = 0;
+  rtlreg_t tmp = src;
+
+  while(tmp){
+    bits++;
+    tmp>>=1;
+  }
+  
+  rtlreg_t mask = 0;
+  int padding = width<<3;
+
+  if(padding<bits)
+    assert(0);
+
+  for(int i=0;i<padding-bits;i++){
+    mask|=1;
+    mask<<=1;
+  } 
+  
+  rtlreg_t result = src|(mask<<(bits-1));
+  return result;
+
 }
 
 #endif

@@ -4,7 +4,20 @@
 #define INSTR_LIST(f)\
               f(auipc)\
               f(addi)\
-              f(add) \
+              f(slli)\
+              f(srli)\
+              f(srai)\
+              f(xori)\
+              f(ori)\
+              f(andi)\
+              f(add)\
+              f(sub)\
+              f(sll)\
+              f(srl)\
+              f(sra)\
+              f(xor)\
+              f(or)\
+              f(and)\
               f(lui)\
               f(jal)\
               f(jalr)\

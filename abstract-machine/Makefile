@@ -20,8 +20,6 @@ ifeq ($(findstring $(MAKECMDGOALS),clean|clean-all|html),)
 $(info # Building $(NAME)-$(MAKECMDGOALS) [$(ARCH)])
 
 ### Check: environment variable `$AM_HOME` looks sane
-AM_HOME = $(shell pwd)
-NEMU_HOME= $(shell pwd)/../nemu
 ifeq ($(wildcard $(AM_HOME)/am/include/am.h),)
   $(error $$AM_HOME must be an AbstractMachine repo)
 endif

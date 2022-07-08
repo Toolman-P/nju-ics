@@ -6,3 +6,6 @@ def_EHelper(addi){
   rtl_addi(s,ddest,dsrc1,id_src2->simm);
 }
 
+def_EHelper(add){
+  rtl_add(s,ddest,dsrc1,dsrc2);
+}

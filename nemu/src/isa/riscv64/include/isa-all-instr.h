@@ -4,6 +4,7 @@
 #define INSTR_LIST(f)\
               f(auipc)\
               f(addi)\
+              f(add) \
               f(lui)\
               f(jal)\
               f(jalr)\

@@ -18,6 +18,12 @@
               f(xor)\
               f(or)\
               f(and)\
+              f(beq)\
+              f(bne)\
+              f(blt)\
+              f(bltu)\
+              f(bge)\
+              f(bgeu)\
               f(lui)\
               f(jal)\
               f(jalr)\

@@ -54,7 +54,8 @@ static inline def_DHelper(J){
                  (s->isa.instr.j.offset12_19 << 12) | \
                  (s->isa.instr.j.offset20 << 20));
 
-  if(s->isa.instr.j.offset20) simm = c_sext(simm,8);
+  if(s->isa.instr.j.offset20)
+    simm = c_sext(simm,8);
 
   decode_op_i(s,id_src1,simm,false);
   decode_op_r(s,id_dest,s->isa.instr.j.rd, false);

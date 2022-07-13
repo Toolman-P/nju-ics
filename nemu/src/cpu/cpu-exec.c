@@ -3,13 +3,13 @@
 #include <cpu/difftest.h>
 #include <isa-all-instr.h>
 #include <locale.h>
-
 /* The assembly code of instructions executed is only output to the screen
  * when the number of instructions executed is less than this value.
  * This is useful when you use the `si' command.
  * You can modify this value as you want.
  */
-#define MAX_INSTR_TO_PRINT 10
+#define MAX_INSTR_TO_PRINT 15
+#define MAX_IRING_BUF 15
 
 CPU_state cpu = {};
 uint64_t g_nr_guest_instr = 0;
@@ -17,6 +17,35 @@ static uint64_t g_timer = 0; // unit: us
 static bool g_print_step = false;
 const rtlreg_t rzero = 0;
 rtlreg_t tmp_reg[4];
+
+#ifdef CONFIG_ITRACE
+static struct {
+  uint8_t pos;
+  char bufs[MAX_IRING_BUF][128];
+} iring;
+
+void init_iringbuf(){
+  iring.pos=0;
+  memset(iring.bufs,0,sizeof(iring.bufs));
+}
+
+void copy_buf(char *p){
+  strcpy(iring.bufs[iring.pos],p);
+  iring.pos = (iring.pos+1)%MAX_IRING_BUF;
+}
+
+void print_iringbuf(){
+  printf("-----------------------------\n");
+  printf("------  IRING   TRACE  ------\n");
+  printf("-----------------------------\n");
+  for(uint8_t i=0;i<MAX_IRING_BUF;i++){
+    if(iring.pos==i)
+      printf(ASNI_FMT("-->\n",ASNI_FG_GREEN));
+    printf("%s\n",iring.bufs[i]);
+  }
+}
+
+#endif
 
 void device_update();
 void fetch_decode(Decode *s, vaddr_t pc);
@@ -56,6 +85,9 @@ static void statistic() {
 void assert_fail_msg() {
   isa_reg_display();
   statistic();
+  #ifdef CONFIG_ITRACE
+  print_iringbuf();
+  #endif
 }
 
 void fetch_decode(Decode *s, vaddr_t pc) {
@@ -83,6 +115,7 @@ void fetch_decode(Decode *s, vaddr_t pc) {
   void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
   disassemble(p, s->logbuf + sizeof(s->logbuf) - p,
       MUXDEF(CONFIG_ISA_x86, s->snpc, s->pc), (uint8_t *)&s->isa.instr.val, ilen);
+  copy_buf(p);
 #endif
 }
 

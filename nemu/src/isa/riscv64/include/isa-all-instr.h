@@ -5,18 +5,31 @@
               f(auipc)\
               f(addi)\
               f(slli)\
+              f(slti)\
+              f(sltiu)\
               f(srli)\
               f(srai)\
               f(xori)\
               f(ori)\
               f(andi)\
+              f(addiw)\
+              f(slliw)\
+              f(srliw)\
+              f(sraiw)\
               f(add)\
               f(sub)\
               f(sll)\
+              f(slt)\
+              f(sltu)\
               f(srl)\
               f(sra)\
               f(xor)\
               f(or)\
+              f(addw)\
+              f(subw)\
+              f(sllw)\
+              f(srlw)\
+              f(sraw)\
               f(and)\
               f(beq)\
               f(bne)\
@@ -27,9 +40,31 @@
               f(lui)\
               f(jal)\
               f(jalr)\
+              f(lb)\
+              f(lbu)\
+              f(lh)\
+              f(lhu)\
+              f(lw)\
+              f(lwu)\
               f(ld)\
+              f(sb)\
+              f(sh)\
+              f(sw)\
               f(sd)\
               f(inv)\
+              f(mul)\
+              f(mulh)\
+              f(mulhsu)\
+              f(mulhu)\
+              f(div)\
+              f(divu)\
+              f(rem)\
+              f(remu)\
+              f(mulw)\
+              f(divw)\
+              f(divuw)\
+              f(remw)\
+              f(remuw)\
               f(nemu_trap)\
 
 def_all_EXEC_ID();

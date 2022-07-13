@@ -22,7 +22,7 @@ def_EHelper(jalr){
 
 #define def_conditional_branch(name) \
   def_EHelper(name){ \
-    rtl_jrelop(s,EXPAND_RELOP(name),dsrc1,dsrc2,s->pc+id_dest->simm);\
+    rtl_jrelop(s,EXPAND_RELOP(name),dsrc1,dsrc2,(sword_t)s->pc+(sword_t)id_dest->simm);\
   }
 
 def_conditional_branch(beq)

@@ -17,6 +17,11 @@
 
 #ifdef CONFIG_ISA64
 #define c_sext32to64(a) ((int64_t)(int32_t)(a))
+#define c_sext16to64(a) ((int64_t)(int16_t)(a))
+#define c_sext8to64(a)  ((int64_t)(int8_t)(a))
+#define c_zext32to64(a) ((uint64_t)(uint32_t)(a))
+#define c_zext16to64(a) ((uint64_t)(uint16_t)(a))
+#define c_zext8to64(a) ((uint64_t)(uint8_t)(a))
 #define c_addw(a, b) c_sext32to64((a) + (b))
 #define c_subw(a, b) c_sext32to64((a) - (b))
 #define c_sllw(a, b) c_sext32to64((uint32_t)(a) << ((b) & 0x1f))
@@ -62,22 +67,21 @@ static inline bool interpret_relop(uint32_t relop, const rtlreg_t src1, const rt
 }
 
 static inline rtlreg_t c_sext(const rtlreg_t src, const int width){
-  
-  unsigned bits = 0;
-  rtlreg_t tmp = src;
-  rtlreg_t mask = (~0)>>(8*sizeof(rtlreg_t)-(width<<3));
-  while(tmp){
-    bits++;
-    tmp>>=1;
-  } 
-
-  mask = (mask>>bits)<<bits;
-  return src|mask;
+  switch (width) {
+    case 1: return c_sext8to64(src);
+    case 2: return c_sext16to64(src);
+    case 4: return c_sext32to64(src);
+    default: MUXDEF(CONFIG_RT_CHECK, assert(0), return 0);
+  }
 }
 
 static inline rtlreg_t c_zext(const rtlreg_t src, const int width){
-  rtlreg_t mask = (~0)>>(8*sizeof(rtlreg_t)-(width<<3));
-  return mask&src;
+  switch (width) {
+    case 1: return c_zext8to64(src);
+    case 2: return c_zext16to64(src);
+    case 4: return c_zext32to64(src);
+    default: MUXDEF(CONFIG_RT_CHECK, assert(0), return 0);
+  }
 }
 
 #endif

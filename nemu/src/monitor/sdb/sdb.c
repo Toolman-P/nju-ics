@@ -40,8 +40,10 @@ static int cmd_q(char *args) { return -1; }
 static int cmd_help(char *args);
 
 static int cmd_si(char *args) {
-  int steps = strtol(args, NULL, 10);
-  cpu_exec(steps);
+  if(!args) 
+    cpu_exec(1);
+  else
+    cpu_exec(atoi(args));
   return 0;
 }
 

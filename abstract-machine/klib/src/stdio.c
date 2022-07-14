@@ -33,7 +33,6 @@ int printf(const char *fmt, ...) {
   va_list ap;
   char *pt;
   int cnt = 0;
-
   va_start(ap,fmt);
   while(*fp!='\0'){
     if(*fp=='%'){
@@ -52,8 +51,7 @@ int printf(const char *fmt, ...) {
           putstr(pt);
           break;
         default:
-          panic("Not implemented!");
-          return -1;
+          putch(*fp);
       }
     }else{
       putch(*fp);

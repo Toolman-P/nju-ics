@@ -51,6 +51,8 @@ case $1 in
     ;;
   abstract-machine)
     init abstract-machine AM_HOME
+    ;;
+  fceux-am)
     init_no_git fceux-am
     ;;
   am-kernels)

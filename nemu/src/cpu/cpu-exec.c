@@ -18,7 +18,7 @@ static bool g_print_step = false;
 const rtlreg_t rzero = 0;
 rtlreg_t tmp_reg[4];
 
-#ifdef CONFIG_ITRACE
+#if CONFIG_ITRACE
 static struct {
   uint8_t pos;
   char bufs[MAX_IRING_BUF][128];
@@ -45,6 +45,9 @@ void print_iringbuf(){
   }
 }
 
+  #if CONFIG_FTRACE
+    uint64_t stack_dep=0;
+  #endif
 #endif
 
 void device_update();
@@ -53,7 +56,13 @@ void diff_watchpoints();
 
 static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #ifdef CONFIG_ITRACE_COND
-  if (ITRACE_COND) log_write("%s\n", _this->logbuf);
+  if (ITRACE_COND){
+    #if CONFIG_FTRACE
+      for(int i=0;i<stack_dep;i++)
+        log_write("\t");
+    #endif
+    log_write("%s\n", _this->logbuf);
+  }
   diff_watchpoints();
 #endif
   if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
@@ -96,7 +105,7 @@ void fetch_decode(Decode *s, vaddr_t pc) {
   int idx = isa_fetch_decode(s);
   s->dnpc = s->snpc;
   s->EHelper = g_exec_table[idx];
-#ifdef CONFIG_ITRACE
+#if CONFIG_ITRACE
   char *p = s->logbuf;
   p += snprintf(p, sizeof(s->logbuf), FMT_WORD ":", s->pc);
   int ilen = s->snpc - s->pc;
@@ -116,6 +125,30 @@ void fetch_decode(Decode *s, vaddr_t pc) {
   disassemble(p, s->logbuf + sizeof(s->logbuf) - p,
       MUXDEF(CONFIG_ISA_x86, s->snpc, s->pc), (uint8_t *)&s->isa.instr.val, ilen);
   copy_buf(p);
+
+  char *search_symbol(word_t pc);
+
+  #ifdef CONFIG_FTRACE
+    
+    if(s->isa.instr.val == 0x00008067){
+      if(stack_dep){
+        stack_dep--;
+        for(int i=0;i<stack_dep;i++)
+          log_write("\t");
+        log_write(ASNI_FMT(FMT_WORD": ret\n",ASNI_FG_BLUE),MUXDEF(CONFIG_ISA_x86, s->snpc, s->pc));
+      }
+    }
+    if((s->isa.instr.val & 0x0ef) == 0x0ef){
+      sword_t jmp = MUXDEF(CONFIG_ISA_x86, s->snpc, s->pc)+s->src1.simm;
+      char *symbol=search_symbol(jmp);
+      if(symbol){
+        for(int i=0;i<stack_dep;i++)
+          log_write("\t");
+        log_write(ASNI_FMT(FMT_WORD": call [%s@"FMT_WORD"]\n",ASNI_FG_BLUE),MUXDEF(CONFIG_ISA_x86, s->snpc, s->pc),symbol,jmp);  
+      }
+      stack_dep++;
+    }
+  #endif
 #endif
 }
 

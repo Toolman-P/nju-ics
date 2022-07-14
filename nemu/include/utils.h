@@ -59,4 +59,10 @@ uint64_t get_time();
   } while (0)
 
 
-#endif
+typedef struct symtab{
+    char *name;
+    word_t start,end;
+    struct symtab *next;
+} sym_t;
+
+#endif 

@@ -1,8 +1,6 @@
 #include <am.h>
 #include <nemu.h>
 
-#include "../../../riscv/riscv.h"
-
 void __am_timer_init() {
  
 }

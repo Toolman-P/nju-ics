@@ -21,7 +21,7 @@ static word_t pmem_read(paddr_t addr, int len) {
         for(int i=0;i<stack_dep;i++)
           log_write(" ");
       #endif
-    printf(ASNI_FMT("[r](%d)"FMT_WORD" --> "FMT_WORD"\n",ASNI_FG_GREEN),len,(word_t)addr,ret);
+    log_write(ASNI_FMT("[Mem][r](%d)"FMT_WORD" --> "FMT_WORD"\n",ASNI_FG_GREEN),len,(word_t)addr,ret);
   #endif
   return ret;
 }
@@ -32,7 +32,7 @@ static void pmem_write(paddr_t addr, int len, word_t data) {
         for(int i=0;i<stack_dep;i++)
           log_write(" ");
       #endif
-    printf(ASNI_FMT("[w](%d)"FMT_WORD" <-- "FMT_WORD"\n",ASNI_FG_RED),len,(word_t)addr,data);
+    log_write(ASNI_FMT("[Mem][w](%d)"FMT_WORD" <-- "FMT_WORD"\n",ASNI_FG_RED),len,(word_t)addr,data);
   #endif
   host_write(guest_to_host(addr), len, data);
 }

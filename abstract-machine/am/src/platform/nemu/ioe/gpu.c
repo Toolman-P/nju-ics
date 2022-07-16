@@ -1,9 +1,9 @@
 #include <am.h>
 #include <nemu.h>
-#include <stdio.h>
+
 
 #define SYNC_ADDR (VGACTL_ADDR + 4)
-#define min
+
 static uint32_t vga_w = 0;
 static uint32_t vga_h = 0;
 
@@ -17,7 +17,6 @@ void __am_gpu_init() {
   uint32_t info = inl(VGACTL_ADDR);
   vga_w = info>>16;
   vga_h = info&0xFFFF;
-  printf("%d %d\n",vga_w,vga_h);
 }
 
 void __am_gpu_config(AM_GPU_CONFIG_T *cfg) {

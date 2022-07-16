@@ -23,6 +23,7 @@ int itoa(int a,char *str){
   bp = buf+cnt;
   while(bp!=buf)
     *sp++=*(--bp);
+  *sp='\0';
   return cnt;
 }
 

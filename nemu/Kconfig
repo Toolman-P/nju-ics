@@ -149,9 +149,14 @@ config MTRACE
   bool "Enable memory tracer"
   default y
 
-  config FTRACE
+config FTRACE
   depends on TRACE && TARGET_NATIVE_ELF && ENGINE_INTERPRETER
   bool "Enable function call tracer"
+  default y
+
+config DTRACE
+  depends on TRACE && TARGET_NATIVE_ELF && ENGINE_INTERPRETER
+  bool "Enable device access tracer"
   default y
 
 config DIFFTEST

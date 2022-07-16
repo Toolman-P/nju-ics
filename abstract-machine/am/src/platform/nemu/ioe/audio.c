@@ -11,11 +11,10 @@
 static int bufsize = 0;
 
 void __am_audio_init() {
-  bufsize = inl(AUDIO_SBUF_SIZE_ADDR);
-  printf("%d\n",bufsize);
 }
 
 void __am_audio_config(AM_AUDIO_CONFIG_T *cfg) {
+  bufsize = inl(AUDIO_SBUF_SIZE_ADDR);
   cfg->present = true;
   cfg->bufsize = bufsize;
 }

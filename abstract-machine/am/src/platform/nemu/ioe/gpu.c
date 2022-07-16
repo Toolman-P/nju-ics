@@ -14,13 +14,15 @@ static uint32_t vga_h = 0;
   (FB_ADDR+4*(vga_w*(ctl->y+j)+ctl->x+i))
 
 void __am_gpu_init() {
-  uint32_t info = inl(VGACTL_ADDR);
-  vga_w = info>>16;
-  vga_h = info&0xFFFF;
+  
 }
 
 void __am_gpu_config(AM_GPU_CONFIG_T *cfg) {
   
+  uint32_t info = inl(VGACTL_ADDR);
+  vga_w = info>>16;
+  vga_h = info&0xFFFF;
+
   *cfg = (AM_GPU_CONFIG_T) {
     .present = true, .has_accel = false,
     .width = vga_w, .height = vga_h,

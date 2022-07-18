@@ -98,6 +98,14 @@ static inline def_rtl(div64s_r, rtlreg_t* dest,
   *dest = dividend % divisor;
 }
 
+static inline def_rtl(inv, rtlreg_t *dest, const rtlreg_t *src){
+  *dest = c_inv(*src);
+}
+
+static inline def_rtl(invi,rtlreg_t *dest, const word_t imm){
+  *dest = c_inv(imm);
+}
+
 // memory
 
 static inline def_rtl(lm, rtlreg_t *dest, const rtlreg_t* addr, word_t offset, int len) {

@@ -15,6 +15,8 @@
 #define c_srl(a, b) ((a) >> ((b) & c_shift_mask))
 #define c_sra(a, b) ((sword_t)(a) >> ((b) & c_shift_mask))
 
+#define c_inv(a) (~a)
+
 #ifdef CONFIG_ISA64
 #define c_sext32to64(a) ((int64_t)(int32_t)(a))
 #define c_sext16to64(a) ((int64_t)(int16_t)(a))

@@ -3,3 +3,5 @@
 #include "../instr/ldst.h"
 #include "../instr/special.h"
 #include "../instr/control.h"
+#include "../instr/atomic.h"
+#include "../instr/system.h"

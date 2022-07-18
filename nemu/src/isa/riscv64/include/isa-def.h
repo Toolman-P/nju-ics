@@ -6,8 +6,7 @@
 typedef struct {
   union {
     uint64_t _64;
-  } gpr[32];
-
+  } gpr[32],csr[4096];
   vaddr_t pc;
 } riscv64_CPU_state;
 
@@ -71,5 +70,9 @@ typedef struct {
 } riscv64_ISADecodeInfo;
 
 #define isa_mmu_check(vaddr, len, type) (MMU_DIRECT)
+
+enum{
+  INTR_ECALL = 11
+};
 
 #endif

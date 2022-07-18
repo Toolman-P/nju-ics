@@ -65,6 +65,11 @@
               f(divuw)\
               f(remw)\
               f(remuw)\
+              f(csrrw)\
+              f(csrrs)\
+              f(csrrc)\
+              f(ecall)\
+              f(mret)\
               f(nemu_trap)\
 
 def_all_EXEC_ID();

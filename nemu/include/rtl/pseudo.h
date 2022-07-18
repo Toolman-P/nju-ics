@@ -36,5 +36,4 @@ static inline def_rtl(msb, rtlreg_t* dest, const rtlreg_t* src1, int width) {
   // dest <- src1[width * 8 - 1]
   *dest=c_srl(c_and(c_sll(1,8*width-1),*src1),8*width-1);
 }
-
 #endif

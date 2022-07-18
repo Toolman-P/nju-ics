@@ -51,7 +51,7 @@ word_t map_read(paddr_t addr, int len, IOMap *map) {
         for(int i=0;i<stack_dep;i++)
           log_write(" ");
       #endif
-    log_write(ASNI_FMT("[device][r] <%s+%x>\n",ASNI_FG_RED),map->name,offset);
+    log_write(ASNI_FMT("[device][r] <%s+%02x>\n",ASNI_FG_RED),map->name,offset);
   #endif
   word_t ret = host_read(map->space + offset, len);
   return ret;

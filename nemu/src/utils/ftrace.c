@@ -8,6 +8,7 @@
 #define ELFN(type) concat(MUXDEF(CONFIG_ISA64,ELF64_,ELF32_),type)
 
 static sym_t *sym_start, *sym_end;
+bool is_ftraceopen = false;
 
 static void init_sympool(){
     sym_start = malloc(sizeof(sym_t));
@@ -91,5 +92,8 @@ int init_ftrace(const char *elf_file){
     free(sh_strtab);
     free(strtab);
     free(symtab);
+
+    is_ftraceopen = true;
+    
     return 0;
 }

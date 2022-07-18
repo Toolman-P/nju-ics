@@ -47,6 +47,7 @@ void print_iringbuf(){
 
   #if CONFIG_FTRACE
     uint64_t stack_dep=0;
+    extern bool is_ftraceopen;
   #endif
 #endif
 
@@ -77,32 +78,49 @@ static const void* g_exec_table[TOTAL_INSTR] = {
 };
 
 static void fetch_decode_exec_updatepc(Decode *s) {
+#if CONFIG_TRACE
+  #if CONFIG_ETRACE
+    if((s->isa.instr.val & 0x7f) == 0x73){
+      switch(s->isa.instr.val){
+        case 0x73:
+          log_write(ASNI_FMT("[EXP] Triggered ecall intr \n",ASNI_FG_RED));
+          break;
+        case 0x30200073:
+          log_write(ASNI_FMT("[EXP] Triggered mret intr \n",ASNI_FG_BLUE));
+          break;
+      }
+    }
+  #endif
+#endif
   fetch_decode(s, cpu.pc);
   s->EHelper(s);
+  cpu.pc = s->dnpc;
 
+#if CONFIG_TRACE
   #ifdef CONFIG_FTRACE
-    char *search_symbol(word_t pc);
-    
-    if(s->isa.instr.val == 0x00008067){
-      if(stack_dep){
-        stack_dep--;
-        for(int i=0;i<stack_dep;i++)
-          log_write(" ");
-        log_write(ASNI_FMT(FMT_WORD": ret\n",ASNI_FG_BLUE),s->pc);
-      }
-    }else if((s->isa.instr.val & 0xff) == 0xef || (s->isa.instr.val & 0xff) == 0xe7){
-      if(s->dnpc!=s->snpc){
-        char *symbol=search_symbol(s->dnpc);
-        if(symbol){
+    if(is_ftraceopen){
+      char *search_symbol(word_t pc);
+      if(s->isa.instr.val == 0x00008067){
+        if(stack_dep){
+          stack_dep--;
           for(int i=0;i<stack_dep;i++)
-          log_write(" ");
-          log_write(ASNI_FMT(FMT_WORD": call [%s@"FMT_WORD"]\n",ASNI_FG_BLUE),s->pc,symbol,s->dnpc);  
-          stack_dep++;
+            log_write(" ");
+          log_write(ASNI_FMT(FMT_WORD": ret\n",ASNI_FG_BLUE),s->pc);
+        }
+      }else if((s->isa.instr.val & 0xff) == 0xef || (s->isa.instr.val & 0xff) == 0xe7){
+        if(s->dnpc!=s->snpc){
+          char *symbol=search_symbol(s->dnpc);
+          if(symbol){
+            for(int i=0;i<stack_dep;i++)
+            log_write(" ");
+            log_write(ASNI_FMT(FMT_WORD": call [%s@"FMT_WORD"]\n",ASNI_FG_BLUE),s->pc,symbol,s->dnpc);  
+            stack_dep++;
+          }
         }
       }
     }
   #endif
-  cpu.pc = s->dnpc;
+#endif
 }
 
 static void statistic() {

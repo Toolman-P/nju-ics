@@ -8,7 +8,12 @@ Context* __am_irq_handle(Context *c) {
   if (user_handler) {
     Event ev = {0};
     switch (c->mcause) {
-      default: ev.event = EVENT_ERROR; break;
+      case INTR_YIELD:
+        ev.event = EVENT_YIELD;
+        break;
+      default:
+        ev.event = EVENT_ERROR;
+        break;
     }
 
     c = user_handler(ev, c);
@@ -26,7 +31,7 @@ bool cte_init(Context*(*handler)(Event, Context*)) {
 
   // register event handler
   user_handler = handler;
-
+  
   return true;
 }
 
@@ -36,6 +41,7 @@ Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
 
 void yield() {
   asm volatile("li a7, -1; ecall");
+  
 }
 
 bool ienabled() {

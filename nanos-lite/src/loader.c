@@ -1,5 +1,6 @@
 #include <proc.h>
 #include <elf.h>
+#include <fs.h>
 
 #ifdef __LP64__
 # define Elf_Ehdr Elf64_Ehdr
@@ -25,12 +26,12 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
   uint32_t vaddr,memsz,filesz,offset;
 #endif
 
-  if(!filename){
-    ramdisk_read(&ehdr,0,sizeof(ehdr));
-    ramdisk_read(&phdr,ehdr.e_phoff,ehdr.e_phnum*ehdr.e_phentsize);
-  }else{
-    assert(0);
-  }
+  assert(filename);
+
+  int fd = fs_open(filename);
+  fs_read(fd,&ehdr,sizeof(ehdr));
+  fs_lseek(fd,ehdr.e_phoff,SEEK_SET);
+  fs_read(fd,&phdr,ehdr.e_phnum*ehdr.e_phentsize);
 
   for(uint16_t i=0;i<ehdr.e_phnum;i++){
     if(phdr[i].p_type == PT_LOAD){
@@ -39,7 +40,8 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
       filesz = phdr[i].p_filesz;
       offset = phdr[i].p_offset;
       memset((char *)vaddr,0,memsz);
-      ramdisk_read((char *)vaddr,offset,filesz);
+      fs_lseek(fd,offset,SEEK_SET);
+      fs_read(fd,(void *)vaddr,filesz);
     }
   }
   return ehdr.e_entry;

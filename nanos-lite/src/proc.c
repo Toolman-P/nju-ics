@@ -25,7 +25,7 @@ void init_proc() {
   switch_boot_pcb();
 
   Log("Initializing processes...");
-  naive_uload(current,NULL);
+  naive_uload(current,"/bin/dummy");
 
 }
 

@@ -18,13 +18,16 @@ define_syscall(write){
     default:
       panic("Wrong fd ID: %d, Only support stdout(1),strerr(2)",fd);
   }
-  c->GPR1 = 97;
+}
+
+define_syscall(sbrk){
+  c->GPRx=0;
 }
 
 void do_syscall(Context *c) {
   uintptr_t a[4];
   a[0] = c->GPR1;
-  // Log("[STRACE] Syscall ID: %d",a[0]);
+  Log("[STRACE] Syscall ID: %d\n",a[0]);
   switch (a[0]) {
     case SYS_exit:
       halt(0);
@@ -34,6 +37,9 @@ void do_syscall(Context *c) {
       break;
     case SYS_write:
       do_syscall_write(c);
+      break;
+    case SYS_brk:
+      do_syscall_sbrk(c);
       break;
     default: panic("Unhandled syscall ID = %d", a[0]);
   }

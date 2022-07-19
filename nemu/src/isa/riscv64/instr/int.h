@@ -47,7 +47,7 @@ def_exec_compute_reg(sub)
 def_exec_compute_reg_w(sub)
 
 def_EHelper(auipc) {
-  rtl_li(s, ddest, id_src1->imm + s->pc);
+  rtl_li(s, ddest, id_src1->simm + s->pc);
 }
 
 def_EHelper(slti){

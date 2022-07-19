@@ -4,6 +4,7 @@
 #include <common.h>
 
 enum{
+  REG_SYS=17,
   REG_MSTATUS = 0x300,
   REG_MTVEC = 0x305,
   REG_MEPC = 0x341,
@@ -26,6 +27,7 @@ static inline int check_csr_idx(int idx){
 #define mcause &csr(REG_MCAUSE)
 #define mstatus &csr(REG_MSTATUS)
 #define mepc &csr(REG_MEPC)
+#define rsys &gpr(REG_SYS)
 
 static inline const char* reg_name(int idx, int width) {
   extern const char* regs[];

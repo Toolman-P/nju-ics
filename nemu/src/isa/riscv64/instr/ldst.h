@@ -11,18 +11,18 @@
 
 #define def_exec_unsigned_load(type) \
   def_EHelper(concat3(l,type,u)){ \
-    rtl_lm(s,ddest,dsrc1,id_src2->imm,EXPAND_LEN(type));\
+    rtl_lm(s,ddest,dsrc1,id_src2->simm,EXPAND_LEN(type));\
   }
 
 #define def_exec_signed_load(type) \
   def_EHelper(concat(l,type)){ \
-    rtl_lm(s,s0,dsrc1,id_src2->imm,EXPAND_LEN(type));\
+    rtl_lm(s,s0,dsrc1,id_src2->simm,EXPAND_LEN(type));\
     rtl_sext(s,ddest,s0,EXPAND_LEN(type));\
   }
 
 #define def_exec_store(type) \
   def_EHelper(concat(s,type)){ \
-    rtl_sm(s,ddest,dsrc1,id_src2->imm,EXPAND_LEN(type));\
+    rtl_sm(s,ddest,dsrc1,id_src2->simm,EXPAND_LEN(type));\
   }
 
 #define def_exec_load_store_all(type) \

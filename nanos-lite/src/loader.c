@@ -28,10 +28,10 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
 
   assert(filename);
 
-  int fd = fs_open(filename);
-  fs_read(fd,&ehdr,sizeof(ehdr));
-  fs_lseek(fd,ehdr.e_phoff,SEEK_SET);
-  fs_read(fd,&phdr,ehdr.e_phnum*ehdr.e_phentsize);
+  int fd = open(filename);
+  read(fd,&ehdr,sizeof(ehdr));
+  lseek(fd,ehdr.e_phoff,SEEK_SET);
+  read(fd,&phdr,ehdr.e_phnum*ehdr.e_phentsize);
 
   for(uint16_t i=0;i<ehdr.e_phnum;i++){
     if(phdr[i].p_type == PT_LOAD){
@@ -40,8 +40,8 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
       filesz = phdr[i].p_filesz;
       offset = phdr[i].p_offset;
       memset((char *)vaddr,0,memsz);
-      fs_lseek(fd,offset,SEEK_SET);
-      fs_read(fd,(void *)vaddr,filesz);
+      lseek(fd,offset,SEEK_SET);
+      read(fd,(void *)vaddr,filesz);
     }
   }
   return ehdr.e_entry;

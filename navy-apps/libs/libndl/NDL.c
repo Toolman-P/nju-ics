@@ -47,6 +47,8 @@ void NDL_OpenCanvas(int *w, int *h) {
     int fd = open("/proc/dispinfo",0,0);
     read(fd,buf,sizeof(buf));
     sscanf(buf,"%d %d",&screen_w,&screen_h);
+    *w = screen_w;
+    *h = screen_h;
     close(fd);
   }
 }
@@ -55,11 +57,14 @@ void NDL_DrawRect(uint32_t *pixels, int x, int y, int w, int h) {
   size_t p_offset,s_offset;
   int fd = open("/dev/fb",0,0);
   for(int j=0;j<h;j++){
-    s_offset = (y+j)*screen_w + x;  
+    s_offset = (y+j)*screen_w + x;
     p_offset = w*j;
     lseek(fd,s_offset,SEEK_SET);
-    write(fd,(const void *)(pixels+p_offset),w);
+    write(fd,pixels+p_offset,w);
   }
+  
+  if(w==0 && h==0)
+    write(fd,NULL,0);
   close(fd);  
 }
 

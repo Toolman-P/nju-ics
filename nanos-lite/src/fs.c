@@ -14,6 +14,7 @@ size_t serial_write(const void *buf, size_t offset, size_t len);
 size_t events_read(void *buf, size_t offset, size_t len);
 size_t dispinfo_read(void *buf, size_t offset, size_t len);
 size_t fb_write(const void *buf, size_t offset, size_t len);
+size_t __gpu_screen_size();
 
 typedef struct {
   char *name;
@@ -51,9 +52,8 @@ static size_t file_total = 0;
 
 int open(const char *filename){
   for(int i=0;i<file_total;i++)
-    if(strcmp(filename,file_table[i].name)==0){
+    if(strcmp(filename,file_table[i].name)==0)
       return i;
-    }
   assert(0);
   return -1;
 }
@@ -117,4 +117,5 @@ size_t write(int fd, const void *buf, size_t len){
 void init_fs() {
   // TODO: initialize the size of /dev/fb
   file_total = sizeof(file_table)/sizeof(Finfo)-1;
+  file_table[FD_FB].size = __gpu_screen_size();
 }

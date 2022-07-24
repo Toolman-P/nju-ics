@@ -47,7 +47,7 @@ ARCHIVE  = $(WORK_DIR)/build/$(NAME)-$(ISA).a
 
 ### Add default libraries for ISA != native
 ifneq ($(ISA), native)
-LIBS += libc libos libndl
+LIBS += libc libos
 CFLAGS += -U_FORTIFY_SOURCE  # fix compile error in Newlib on ubuntu
 else
 WL = -Wl,
@@ -98,7 +98,6 @@ ASFLAGS  +=  $(CFLAGS)
 
 ### Rule (compile): a single `.c` -> `.o` (gcc)
 $(DST_DIR)/%.o: %.c
-	@echo $(INCFLAGS)
 	@mkdir -p $(dir $@) && echo + CC $<
 	@$(CC) -std=gnu11 $(CFLAGS) -c -o $@ $(realpath $<)
 
@@ -170,8 +169,8 @@ $(CLEAN_ALL):
 .PHONY: clean-all $(CLEAN_ALL)
 
 ### Build fsimg and ramdisk for Nanos-lite
-APPS =
-TESTS = event-test bmp-test
+APPS = menu
+TESTS = bmp-test event-test
 
 fsimg: $(addprefix apps/, $(APPS)) $(addprefix tests/, $(TESTS))
 	-for t in $^; do $(MAKE) -s -C $(NAVY_HOME)/$$t install; done

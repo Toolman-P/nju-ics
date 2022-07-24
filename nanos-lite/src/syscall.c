@@ -1,5 +1,7 @@
 #include <common.h>
 #include <fs.h>
+#include <proc.h>
+
 #include "syscall.h"
 
 struct timeval{
@@ -11,6 +13,7 @@ struct timeval{
   static inline void CONCAT(do_syscall_,name)(Context *c)
 
 void __am_timer_uptime(AM_TIMER_UPTIME_T *uptime);
+void naive_uload(PCB *pcb, const char *filename);
 
 define_syscall(write){
   c->GPRx=write(c->GPR2,(const void *)c->GPR3,c->GPR4);
@@ -44,6 +47,11 @@ __am_timer_uptime(&uptime);
   c->GPRx = 0;
 }
 
+define_syscall(execve){
+  naive_uload(NULL,(const char *)c->GPR2);
+  c->GPRx = -1; // never reach here;
+}
+
 void do_syscall(Context *c) {
 #ifdef STRACE
   Log("[STRACE] Syscall ID: %d\n",c->GPR1);
@@ -75,6 +83,9 @@ void do_syscall(Context *c) {
       break;
     case SYS_gettimeofday:
       do_syscall_gettimeofday(c);
+      break;
+    case SYS_execve:
+      do_syscall_execve(c);
       break;
     default: panic("Unhandled syscall ID = %d", c->GPR1);
   }

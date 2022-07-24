@@ -44,6 +44,7 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
       read(fd,(void *)vaddr,filesz);
     }
   }
+  close(fd);
   return ehdr.e_entry;
 }
 

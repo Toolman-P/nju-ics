@@ -128,7 +128,8 @@ int SDL_PollEvent(SDL_Event *ev) {
     __SDL_eqpop(ev);
     return 1;
   }else{
-    return 0;
+    while(__SDL_fetchevent(ev)==0);
+    return 1;
   }
 }
 
@@ -138,7 +139,7 @@ int SDL_WaitEvent(SDL_Event *event) {
     __SDL_eqpop(event);
     return 1;
   }else{
-    while(__SDL_fetchevent(event)==0);
+    __SDL_fetchevent(event);
     return 1;
   }
   assert(0);

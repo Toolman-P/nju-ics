@@ -9,7 +9,7 @@ void SDL_BlitSurface(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_
   
   assert(dst && src);
   assert(dst->format->BitsPerPixel == src->format->BitsPerPixel);
-
+  assert(src->w <= dst->w && src->h <= dst->h);
   int dx,dy,sx,sy;
   int rh,rw;
   int s_screen_w = src->w;
@@ -22,7 +22,7 @@ void SDL_BlitSurface(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_
   }
 
   if(!srcrect){
-    sx = sy = dx = dy = 0;
+    sx = sy = 0;
     rw = src->w;
     rh = src->h;
   }else{

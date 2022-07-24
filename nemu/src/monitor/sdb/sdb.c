@@ -3,9 +3,8 @@
 #include <memory/paddr.h> 
 #include <readline/history.h>
 #include <readline/readline.h>
-
 #include "sdb.h"
-
+#include "../local-include/reg.h"
 static int is_batch_mode = false;
 
 void init_regex();
@@ -134,6 +133,32 @@ static int cmd_d(char *args){
   return 0;
 }
 
+static int cmd_load(char *args){
+  char *filename = args;
+  FILE *fd = fopen(filename,"r");
+  assert(fd);
+  for(int i=0;i<32;i++)
+    fscanf(fd,FMT_WORD"\n",&gpr(i));
+  for(int i=0;i<4096;i++)
+    fscanf(fd,FMT_WORD"\n",&csr(i));
+  fscanf(fd,FMT_WORD"\n",&cpu.pc);
+  return 0;
+}
+
+static int cmd_save(char *args){
+  char *filename = args;
+  FILE *fd = fopen(filename,"w");
+  assert(fd);
+  for(int i=0;i<32;i++)
+    fprintf(fd,FMT_WORD"\n",gpr(i));
+  
+  for(int i=0;i<4096;i++)
+    fprintf(fd,FMT_WORD"\n",csr(i));
+
+  fprintf(fd,FMT_WORD"\n",cpu.pc);
+  return 0;
+}
+
 static struct {
   const char *name;
   const char *description;
@@ -148,7 +173,8 @@ static struct {
     {"p", "Eval the result of the expression.", cmd_p},
     {"w", "Set watchpoint on the expression", cmd_w},
     {"d", "Delete watchpoints", cmd_d},
-
+    {"load","Load snapshots",cmd_load},
+    {"save","Save snapshots",cmd_save}
     /* TODO: Add more commands */
 
 };

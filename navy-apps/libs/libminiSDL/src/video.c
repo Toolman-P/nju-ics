@@ -1,18 +1,91 @@
 #include <NDL.h>
+#include <stdio.h>
 #include <sdl-video.h>
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
 
 void SDL_BlitSurface(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect) {
+  
   assert(dst && src);
   assert(dst->format->BitsPerPixel == src->format->BitsPerPixel);
+
+  int dx,dy,sx,sy;
+  int rh,rw;
+  int s_screen_w = src->w;
+  int d_screen_w = dst->w;
+  if(!dstrect){
+    dx = dy = 0;
+  }else{
+    dx = dstrect->x;
+    dy = dstrect->y;  
+  }
+
+  if(!srcrect){
+    sx = sy = dx = dy = 0;
+    rw = src->w;
+    rh = src->h;
+  }else{
+    sx = srcrect->x;
+    sy = srcrect->y;
+    rw = srcrect->w;
+    rh = srcrect->h;    
+  }
+
+  uint32_t *s_px = (uint32_t *)src->pixels;
+  uint32_t *d_px = (uint32_t *)dst->pixels;
+
+  for(int i=0;i<rh;i++)
+    for(int j=0;j<rw;j++)
+      d_px[(i+dy)*d_screen_w+dx+j]=s_px[(i+sy)*s_screen_w+sx+j];
+  
+  if(dstrect){
+    dstrect->w = rw;
+    dstrect->h = rh;
+  }
+
 }
 
 void SDL_FillRect(SDL_Surface *dst, SDL_Rect *dstrect, uint32_t color) {
+
+  int screen_w = dst->w;
+  int rw,rh,x,y;
+
+  if(dstrect){
+    rw = dstrect->w;
+    rh = dstrect->h;
+    x = dstrect->x;
+    y = dstrect->y;
+  }else{
+    rw = dst->w;
+    rh = dst->h;
+    x = y = 0;
+  }
+
+  uint32_t *pixels = (uint32_t *)dst->pixels;
+
+  for(int i=0;i<rh;i++){
+    for(int j=0;j<rw;j++){
+      pixels[(i+y)*screen_w+x+j] = color;
+    }
+  }
+  
 }
 
 void SDL_UpdateRect(SDL_Surface *s, int x, int y, int w, int h) {
+  uint32_t *pixels = (uint32_t *)s->pixels;
+  int screen_w = s->w;
+  int offset;
+  if(x==0&&y==0&&w==0&&h==0){
+    NDL_DrawRect(pixels,0,0,s->w,s->h);
+  }else{
+    for(int i=0;i<h;i++){
+      offset = (i+y)*screen_w+x;
+      NDL_DrawRect(pixels+offset,x,y+i,w,1);
+    }
+  }
+  
+  NDL_DrawRect(NULL,0,0,0,0);
 }
 
 // APIs below are already implemented.

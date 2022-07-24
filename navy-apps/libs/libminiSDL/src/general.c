@@ -1,6 +1,12 @@
 #include <NDL.h>
+uint32_t boot_time;
+
+void SDL_init_RWops();
+// void SDL_init_Events();
 
 int SDL_Init(uint32_t flags) {
+  SDL_init_RWops();
+  // SDL_init_Events();
   return NDL_Init(flags);
 }
 

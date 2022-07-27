@@ -67,8 +67,13 @@ void __am_switch(Context *c) {
 }
 
 void map(AddrSpace *as, void *va, void *pa, int prot) {
+  
 }
 
 Context *ucontext(AddrSpace *as, Area kstack, void *entry) {
-  return NULL;
+  Context *cp = (Context *)(kstack.end - sizeof(Context)); 
+  assert(cp);
+  cp->mepc = (uintptr_t)entry; 
+  cp->GPRx = (uintptr_t)heap.end;
+  return cp;
 }

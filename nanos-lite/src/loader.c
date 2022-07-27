@@ -16,7 +16,7 @@ extern uint8_t ramdisk_start;
 
 size_t ramdisk_read(void *buf, size_t offset, size_t len);
 
-static uintptr_t loader(PCB *pcb, const char *filename) {
+uintptr_t loader(PCB *pcb, const char *filename) {
   Elf_Ehdr ehdr;
   Elf_Phdr phdr[10];
 

@@ -108,8 +108,9 @@ size_t read(int fd, void *buf, size_t len){
 
 size_t write(int fd, const void *buf, size_t len){
   WriteFn wfn = file_table[fd].write;
-  if(wfn)
+  if(wfn){
     return wfn(buf,file_table[fd].open_offset,len);
+  }
   else
     return fs_write(fd,buf,len);
 }

@@ -25,7 +25,7 @@ size_t serial_write(const void *buf, size_t offset, size_t len) {
   int ret = len;
   while(len--)
     putch(*(char *)buf++);
-  yield();
+
   return ret;
 }
 
@@ -47,7 +47,6 @@ size_t events_read(void *buf, size_t offset, size_t len) {
   assert(len>strlen(key));
   strcat(buf,key);
 
-  yield();
   return sz;
 }
 
@@ -74,7 +73,7 @@ size_t fb_write(const void *buf, size_t offset, size_t len) {
     ctl.sync = true;
   }
   __am_gpu_fbdraw(&ctl);
-  yield();
+
   return len;
 }
 

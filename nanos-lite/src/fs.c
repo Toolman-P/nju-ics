@@ -54,7 +54,6 @@ int open(const char *filename){
   for(int i=0;i<file_total;i++)
     if(strcmp(filename,file_table[i].name)==0)
       return i;
-  assert(0);
   return -1;
 }
 

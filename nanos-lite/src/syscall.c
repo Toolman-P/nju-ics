@@ -12,15 +12,31 @@ struct timeval{
 #define define_syscall(name) \
   static inline void CONCAT(do_syscall_,name)(Context *c)
 
+extern int errno;
+
 void __am_timer_uptime(AM_TIMER_UPTIME_T *uptime);
 void naive_uload(PCB *pcb, const char *filename);
+int mm_brk(uintptr_t brk);
+int context_uload(PCB *pcb, const char *filename, char * const argv[], char * const envp[]);
+
+PCB *fetch_available_pcb();
+void switch_boot_pcb();
+void halt_current_process();
+void poll_running_pcb();
+void yield();
+
+define_syscall(exit){
+  halt_current_process();
+  yield();
+  c->GPRx = -1; // never reach here;
+}
 
 define_syscall(write){
   c->GPRx=write(c->GPR2,(const void *)c->GPR3,c->GPR4);
 }
 
 define_syscall(sbrk){
-  c->GPRx=0;
+  c->GPRx=mm_brk(c->GPR2);
 }
 
 define_syscall(read){
@@ -48,8 +64,16 @@ __am_timer_uptime(&uptime);
 }
 
 define_syscall(execve){
-  naive_uload(NULL,(const char *)c->GPR2);
-  c->GPRx = -1; // never reach here;
+  PCB *pcb = fetch_available_pcb();
+  char * const *argv = (char * const *)c->GPR3;
+  if(context_uload(pcb,(const char *)c->GPR2,argv,(char * const *)c->GPR4)){
+    switch_boot_pcb();
+    yield();
+    c->GPRx = 0;
+  }else{
+    c->GPRx = -2; // no argument found ;
+  }
+  
 }
 
 void do_syscall(Context *c) {
@@ -58,7 +82,7 @@ void do_syscall(Context *c) {
 #endif
   switch (c->GPR1) {
     case SYS_exit:
-      halt(c->GPR2);
+      do_syscall_exit(c);
       break;
     case SYS_yield:
       yield();

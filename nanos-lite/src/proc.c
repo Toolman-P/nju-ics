@@ -1,4 +1,5 @@
 #include <proc.h>
+#include <memory.h>
 
 #define MAX_NR_PROC 4
 
@@ -8,68 +9,88 @@
 
 static PCB pcb[MAX_NR_PROC] __attribute__((used)) = {};
 static PCB pcb_boot = {};
-PCB *current = NULL;
+PCB *current = NULL, *next = NULL;
 
 Context* kcontext(Area kstack, void (*entry)(void *), void *arg);
 Context* ucontext(AddrSpace *as, Area kstack, void *entry);
 
 void context_kload(PCB *pcb, void (*entry)(void *), void *arg);
-void context_uload(PCB *pcb, const char *filename, char * const argv[], char * const envp[]);
+int context_uload(PCB *pcb, const char *filename, char * const argv[], char * const envp[]);
+
 uintptr_t loader(PCB *pcb, const char *filename);
+
 void naive_uload(PCB *pcb, const char *filename);
 
 void context_kload(PCB *pcb,void (*entry)(void *), void *arg){
+  pcb->as.area = AREA_STACK(pcb);
   pcb->cp = kcontext(AREA_STACK(pcb),entry,arg); 
 }
 
-void context_uload(PCB *pcb, const char *filename, char * const argv[], char * const envp[]){
-
-  Context *cp = ucontext(&pcb->as,AREA_STACK(pcb),(void *)loader(pcb,filename));
-  Area area = (Area){(void *)cp->GPRx,(void *)cp->GPRx};
-
+int context_uload(PCB *pcb, const char *filename, char * const argv[], char * const envp[]){
+  
+  protect(&pcb->as);
+  
   char * const *sp;
-  void * start;
-  intptr_t argc = 0;
+  void *start, *entry, *va, *pa;
 
-  for(sp=argv;*sp;sp++){
-    area.start -= (strlen(*sp)+1+sizeof(uintptr_t));
+  intptr_t argc = 0;
+  
+  pa = pg_alloc(8*PGSIZE);
+
+  Area pa_area = (Area){pa+8*PGSIZE,pa+8*PGSIZE};
+  Area va_area = (Area){pcb->as.area.end-8*PGSIZE,pcb->as.area.end};
+  
+  for(va=va_area.start;va<va_area.end;va+=PGSIZE,pa+=PGSIZE)
+      map(&pcb->as,va,pa,7);
+  
+  for(sp=argv;sp&&*sp;sp++){
+    pa_area.start -= (strlen(*sp)+1+sizeof(uintptr_t));
     argc++;
   }
 
-  area.start -= sizeof(uintptr_t); //NULL
+  pa_area.start -= sizeof(uintptr_t); //NULL
 
-  for(sp=envp;*sp;sp++)
-    area.start -= (strlen(*sp)+1+sizeof(uintptr_t)); //NULL
+  for(sp=envp;sp&&*sp;sp++)
+    pa_area.start -= (strlen(*sp)+1+sizeof(uintptr_t)); //NULL
 
-  area.start -= sizeof(uintptr_t);
-  area.start -= sizeof(intptr_t);
-  start = area.start;
+  pa_area.start -= sizeof(uintptr_t);
+  pa_area.start -= sizeof(intptr_t);
+  
+  start = va_area.end - (pa_area.end - pa_area.start); // the stack pointer 
 
-  *(intptr_t *)(area.start) = argc;
-  area.start = (void *)(((intptr_t *)area.start) + 1);
+  *(intptr_t *)(pa_area.start) = argc;
+  pa_area.start = (void *)(((intptr_t *)pa_area.start) + 1); // 准备用户栈
 
-  for(sp=argv;*sp;sp++){
-    area.end -= (strlen(*sp)+1);
-    memcpy(area.end,*sp,strlen(*sp)+1);
+
+  for(sp=argv;sp&&*sp;sp++){
+    pa_area.end -= (strlen(*sp)+1);
+    memcpy(pa_area.end,*sp,strlen(*sp)+1);
     
-    *(char **)(area.start) = (char *)area.end;
-    area.start = (void *)(((char **)area.start) + 1);
+    *(char **)(pa_area.start) = (char *)pa_area.end;
+    pa_area.start = (void *)(((char **)pa_area.start) + 1);
   }
 
-  *(uintptr_t **)(area.start) = (uintptr_t *)NULL;
-  area.start = (void *)(((char **)area.start) + 1);
+  *(uintptr_t **)(pa_area.start) = (uintptr_t *)NULL;
+  pa_area.start = (void *)(((char **)pa_area.start) + 1);
 
-  for(sp=envp;*sp;sp++){
-    area.end -= (strlen(*sp)+1);
-    memcpy(area.end,*sp,strlen(*sp)+1);
-    *(char **)(area.start) = (char *)area.end;
-    area.start = (void *)(((char **)area.start) + 1);
+  for(sp=envp;sp&&*sp;sp++){
+    pa_area.end -= (strlen(*sp)+1);
+    memcpy(pa_area.end,*sp,strlen(*sp)+1);
+    *(char **)(pa_area.start) = (char *)pa_area.end;
+    pa_area.start = (void *)(((char **)pa_area.start) + 1);
   }
 
-  *(uintptr_t **)(area.start) = (uintptr_t *)NULL;
+  *(uintptr_t **)(pa_area.start) = (uintptr_t *)NULL;
+  
+  if((entry = (void *)loader(pcb,filename)) == NULL)
+    return 0;
 
-  cp->GPRx = (uintptr_t)start;
-  pcb->cp = cp;
+  Log("entry: %p",entry);
+  Log("sp: %p",start);
+
+  pcb->cp = ucontext(&pcb->as,AREA_STACK(pcb),entry); 
+  pcb->cp->GPRx = (uintptr_t)start;// switch to the context pointer
+  return 1;
 }
 
 void switch_boot_pcb() {
@@ -85,29 +106,50 @@ void hello_fun(void *arg) {
   }
 }
 
+PCB *fetch_available_pcb(){
+  for(int i=0;i<MAX_NR_PROC;i++)
+    if(current != &pcb[i] && pcb[i].as.area.start == 0){
+      next = &pcb[i];
+      return next;
+    }
+  panic("No more free process to allocate.");
+  return NULL;
+}
+
+void halt_current_process(){
+  memset(current,0,sizeof(PCB));
+}
+
+PCB *poll_running_pcb(){
+  for(int i=0;i<MAX_NR_PROC;i++)
+    if(current != &pcb[i] && pcb[i].as.area.start != 0){
+      next = &pcb[i];
+      return next;
+    }
+  panic("No running process left");
+}
+
 void init_proc() {
   Log("Initializing processes...");
 
-  char * const argv[] = {
-    "argv is here",
-    "something",
-    "maybe",
+  static char * const argv[]={
+    "/bin/hello",
     NULL
   };
 
-  char * const envp[] = {
-    "PATH = /bin",
-    "something new",
+  static char * const envp[]={
+    "PATH = /bin:/usr/bin",
     NULL
   };
-  Log("Initializing uload...");
-  context_uload(&pcb[0],"/bin/args-test",argv,envp);
-  Log("Finishing Initializing uload...");
+
+  static int i = 114514;
+  context_uload(fetch_available_pcb(),argv[0],argv,envp);
+  context_kload(fetch_available_pcb(),hello_fun,&i);
   switch_boot_pcb();
 }
 
 Context *schedule(Context *prev) {
   current->cp = prev;
-  current = &pcb[0];
+  current = poll_running_pcb();
   return current->cp;
 }

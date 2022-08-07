@@ -3,9 +3,12 @@
 #include <klib.h>
 
 static Context* (*user_handler)(Event, Context*) = NULL;
-
+void __am_get_cur_as(Context *c);
+void __am_switch(Context *c);
 Context* __am_irq_handle(Context *c) {
   if (user_handler) {
+    if(c->pdir!=NULL)
+      __am_get_cur_as(c);
     Event ev = {0};
     switch (c->mcause) {
       case MCAUSE_ECALL:
@@ -25,6 +28,9 @@ Context* __am_irq_handle(Context *c) {
 
     c = user_handler(ev, c);
     assert(c != NULL);
+
+    if(c->pdir!=NULL)
+      __am_switch(c);
   }
 
   return c;
@@ -46,12 +52,12 @@ Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
   Context *cp = (Context *)(kstack.end - sizeof(Context));
   cp->mepc = (uintptr_t)entry;
   cp->a0 = (uintptr_t)arg;
+  cp->pdir = NULL;
   return cp;
 }
 
 void yield() {
   asm volatile("li a7, -1; ecall");
-  
 }
 
 bool ienabled() {

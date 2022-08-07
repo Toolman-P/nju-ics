@@ -4,6 +4,7 @@
 #include "../local-include/reg.h"
 
 #define MIE_BIT (((*mstatus)>>3ul)&1ul)
+
 static inline void __close_external_intr(){
   word_t mie = MIE_BIT;
   *mstatus = (*mstatus & ~((1ul<<3ul)|(1ul<<7ul)))|mie;
@@ -29,7 +30,7 @@ word_t isa_raise_intr(word_t NO, vaddr_t epc) {
 }
 
 word_t isa_query_intr() {
-  if(cpu.INTR && MIE_BIT){
+  if(cpu.INTR && MIE_BIT){ 
     cpu.INTR = false;
     return INTR_TIMER;
   }

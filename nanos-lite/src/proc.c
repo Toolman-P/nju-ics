@@ -8,7 +8,7 @@
 #define AREA_STACK(pcb) ((Area){STACK_START(pcb),STACK_END(pcb)})
 
 static PCB pcb[MAX_NR_PROC] __attribute__((used)) = {};
-static PCB pcb_boot = {};
+static PCB pcb_boot = {}; 
 PCB *current = NULL, *next = NULL;
 
 Context* kcontext(Area kstack, void (*entry)(void *), void *arg);
@@ -132,6 +132,9 @@ PCB *poll_running_pcb(){
 void init_proc() {
   Log("Initializing processes...");
 
+  // static int i = 114514;
+  // context_kload(&pcb[0],hello_fun,&i);
+
   static char * const argv[]={
     "/bin/hello",
     NULL
@@ -141,15 +144,13 @@ void init_proc() {
     "PATH = /bin:/usr/bin",
     NULL
   };
-
-  static int i = 114514;
-  context_uload(fetch_available_pcb(),argv[0],argv,envp);
-  context_kload(fetch_available_pcb(),hello_fun,&i);
+  context_uload(&pcb[0],argv[0],argv,envp);
+  context_uload(&pcb[1],argv[0],argv,envp);
   switch_boot_pcb();
 }
 
 Context *schedule(Context *prev) {
   current->cp = prev;
-  current = poll_running_pcb();
+  current = (current == &pcb[0]) ? &pcb[1] : &pcb[0];
   return current->cp;
 }

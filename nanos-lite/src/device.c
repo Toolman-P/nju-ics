@@ -25,7 +25,6 @@ size_t serial_write(const void *buf, size_t offset, size_t len) {
   int ret = len;
   while(len--)
     putch(*(char *)buf++);
-
   return ret;
 }
 
@@ -59,7 +58,6 @@ size_t dispinfo_read(void *buf, size_t offset, size_t len) {
 size_t fb_write(const void *buf, size_t offset, size_t len) {
   AM_GPU_FBDRAW_T ctl;
  
-
   if(len){
     ctl.pixels = (void *)buf;
     ctl.x = offset % __gpu_cfg.width;

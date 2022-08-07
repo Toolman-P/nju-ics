@@ -44,7 +44,7 @@ paddr_t isa_mmu_translate(vaddr_t vaddr, int len, int type) {
     ((uint64_t)vaddr>>30UL)&PPN_PART_MASK
   };
   int i;
-  assert(vaddr!=0);
+
   for(i=2,ptr=PPN_BASE;i>=0;i--){
     
     ptr = ptr + vpn[i] * sizeof(uint64_t);
@@ -55,7 +55,8 @@ paddr_t isa_mmu_translate(vaddr_t vaddr, int len, int type) {
     #endif
     
     if(!(pte & PTE_V))
-      panic("something happened at translating pte(%p)at %p",(void *)pte,(void *)((uint64_t)ptr));
+      panic("something happened at translating pte (%p) with vaddr: %p with pc: %p",
+      (void *)pte,(void *)((uint64_t)vaddr),(void *)cpu.pc);
     
     if((pte & PTE_R) | (pte & PTE_W) | (pte & PTE_X))
       return (paddr_t)PTETOPADDR(pte,offset);

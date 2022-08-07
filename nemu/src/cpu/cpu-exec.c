@@ -94,6 +94,7 @@ static void fetch_decode_exec_updatepc(Decode *s) {
 #endif
   fetch_decode(s, cpu.pc);
   s->EHelper(s);
+  assert(s->dnpc != 0);
   cpu.pc = s->dnpc;
 
 #if CONFIG_TRACE
@@ -191,6 +192,7 @@ void cpu_exec(uint64_t n) {
     IFDEF(CONFIG_DEVICE, device_update());
     word_t intr = isa_query_intr();
     if(intr != INTR_EMPTY){
+      Log("Triggered timer intr");
       cpu.pc = isa_raise_intr(intr,cpu.pc);
     }
   }

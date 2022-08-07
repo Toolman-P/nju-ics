@@ -10,7 +10,6 @@
   static inline def_rtl(name, rtlreg_t* dest, const rtlreg_t* src1, const rtlreg_t* src2) { \
     *dest = concat(c_, name) (*src1, *src2); \
   }
-
 #define def_rtl_compute_imm(name) \
   static inline def_rtl(name ## i, rtlreg_t* dest, const rtlreg_t* src1, const sword_t imm) { \
     *dest = concat(c_, name) (*src1, imm); \
@@ -97,6 +96,14 @@ static inline def_rtl(div64s_r, rtlreg_t* dest,
   int64_t dividend = ((uint64_t)(*src1_hi) << 32) | (*src1_lo);
   int32_t divisor = (*src2);
   *dest = dividend % divisor;
+}
+
+static inline def_rtl(inv, rtlreg_t *dest, const rtlreg_t *src){
+  *dest = c_inv(*src);
+}
+
+static inline def_rtl(invi,rtlreg_t *dest, const word_t imm){
+  *dest = c_inv(imm);
 }
 
 // memory

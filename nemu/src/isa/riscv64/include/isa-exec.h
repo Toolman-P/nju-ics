@@ -1,3 +1,7 @@
-#include "../instr/compute.h"
+#include "../instr/int.h"
+#include "../instr/float.h"
 #include "../instr/ldst.h"
 #include "../instr/special.h"
+#include "../instr/control.h"
+#include "../instr/atomic.h"
+#include "../instr/system.h"

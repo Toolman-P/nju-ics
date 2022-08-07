@@ -3,13 +3,13 @@
 #include <cpu/difftest.h>
 #include <isa-all-instr.h>
 #include <locale.h>
-
 /* The assembly code of instructions executed is only output to the screen
  * when the number of instructions executed is less than this value.
  * This is useful when you use the `si' command.
  * You can modify this value as you want.
  */
-#define MAX_INSTR_TO_PRINT 10
+#define MAX_INSTR_TO_PRINT 15
+#define MAX_IRING_BUF 15
 
 CPU_state cpu = {};
 uint64_t g_nr_guest_instr = 0;
@@ -18,12 +18,53 @@ static bool g_print_step = false;
 const rtlreg_t rzero = 0;
 rtlreg_t tmp_reg[4];
 
+#if CONFIG_ITRACE
+static struct {
+  uint8_t pos;
+  char bufs[MAX_IRING_BUF][128];
+} iring;
+
+void init_iringbuf(){
+  iring.pos=0;
+  memset(iring.bufs,0,sizeof(iring.bufs));
+}
+
+void copy_buf(char *p){
+  strcpy(iring.bufs[iring.pos],p);
+  iring.pos = (iring.pos+1)%MAX_IRING_BUF;
+}
+
+void print_iringbuf(){
+  printf("-----------------------------\n");
+  printf("------  IRING   TRACE  ------\n");
+  printf("-----------------------------\n");
+  for(uint8_t i=0;i<MAX_IRING_BUF;i++){
+    if(iring.pos==i)
+      printf(ASNI_FMT("-->\n",ASNI_FG_GREEN));
+    printf("%s\n",iring.bufs[i]);
+  }
+}
+
+  #if CONFIG_FTRACE
+    uint64_t stack_dep=0;
+    extern bool is_ftraceopen;
+  #endif
+#endif
+
 void device_update();
 void fetch_decode(Decode *s, vaddr_t pc);
+void diff_watchpoints();
 
 static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #ifdef CONFIG_ITRACE_COND
-  if (ITRACE_COND) log_write("%s\n", _this->logbuf);
+  if (ITRACE_COND){
+    #if CONFIG_FTRACE
+      for(int i=0;i<stack_dep;i++)
+        log_write(" ");
+    #endif
+    log_write("%s\n", _this->logbuf);
+    diff_watchpoints();
+  }
 #endif
   if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
   IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
@@ -37,9 +78,50 @@ static const void* g_exec_table[TOTAL_INSTR] = {
 };
 
 static void fetch_decode_exec_updatepc(Decode *s) {
+#if CONFIG_TRACE
+  #if CONFIG_ETRACE
+    if((s->isa.instr.val & 0x7f) == 0x73){
+      switch(s->isa.instr.val){
+        case 0x73:
+          log_write(ASNI_FMT("[EXP] Triggered ecall intr \n",ASNI_FG_RED));
+          break;
+        case 0x30200073:
+          log_write(ASNI_FMT("[EXP] Triggered mret intr \n",ASNI_FG_BLUE));
+          break;
+      }
+    }
+  #endif
+#endif
   fetch_decode(s, cpu.pc);
   s->EHelper(s);
+  assert(s->dnpc != 0);
   cpu.pc = s->dnpc;
+
+#if CONFIG_TRACE
+  #ifdef CONFIG_FTRACE
+    if(is_ftraceopen){
+      char *search_symbol(word_t pc);
+      if(s->isa.instr.val == 0x00008067){
+        if(stack_dep){
+          stack_dep--;
+          for(int i=0;i<stack_dep;i++)
+            log_write(" ");
+          log_write(ASNI_FMT(FMT_WORD": ret\n",ASNI_FG_BLUE),s->pc);
+        }
+      }else if((s->isa.instr.val & 0xff) == 0xef || (s->isa.instr.val & 0xff) == 0xe7){
+        if(s->dnpc!=s->snpc){
+          char *symbol=search_symbol(s->dnpc);
+          if(symbol){
+            for(int i=0;i<stack_dep;i++)
+            log_write(" ");
+            log_write(ASNI_FMT(FMT_WORD": call [%s@"FMT_WORD"]\n",ASNI_FG_BLUE),s->pc,symbol,s->dnpc);  
+            stack_dep++;
+          }
+        }
+      }
+    }
+  #endif
+#endif
 }
 
 static void statistic() {
@@ -54,6 +136,9 @@ static void statistic() {
 void assert_fail_msg() {
   isa_reg_display();
   statistic();
+  #ifdef CONFIG_ITRACE
+  print_iringbuf();
+  #endif
 }
 
 void fetch_decode(Decode *s, vaddr_t pc) {
@@ -62,7 +147,7 @@ void fetch_decode(Decode *s, vaddr_t pc) {
   int idx = isa_fetch_decode(s);
   s->dnpc = s->snpc;
   s->EHelper = g_exec_table[idx];
-#ifdef CONFIG_ITRACE
+#if CONFIG_ITRACE
   char *p = s->logbuf;
   p += snprintf(p, sizeof(s->logbuf), FMT_WORD ":", s->pc);
   int ilen = s->snpc - s->pc;
@@ -81,6 +166,8 @@ void fetch_decode(Decode *s, vaddr_t pc) {
   void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
   disassemble(p, s->logbuf + sizeof(s->logbuf) - p,
       MUXDEF(CONFIG_ISA_x86, s->snpc, s->pc), (uint8_t *)&s->isa.instr.val, ilen);
+  copy_buf(p);
+
 #endif
 }
 
@@ -103,6 +190,11 @@ void cpu_exec(uint64_t n) {
     trace_and_difftest(&s, cpu.pc);
     if (nemu_state.state != NEMU_RUNNING) break;
     IFDEF(CONFIG_DEVICE, device_update());
+    word_t intr = isa_query_intr();
+    if(intr != INTR_EMPTY){
+      Log("Triggered timer intr");
+      cpu.pc = isa_raise_intr(intr,cpu.pc);
+    }
   }
 
   uint64_t timer_end = get_time();

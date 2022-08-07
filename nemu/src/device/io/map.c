@@ -8,6 +8,10 @@
 static uint8_t *io_space = NULL;
 static uint8_t *p_space = NULL;
 
+#if CONFIG_FTRACE
+  extern uint64_t stack_dep;
+#endif
+
 uint8_t* new_space(int size) {
   uint8_t *p = p_space;
   // page aligned;
@@ -42,6 +46,13 @@ word_t map_read(paddr_t addr, int len, IOMap *map) {
   check_bound(map, addr);
   paddr_t offset = addr - map->low;
   invoke_callback(map->callback, offset, len, false); // prepare data to read
+  #if CONFIG_DTRACE
+    #if CONFIG_FTRACE
+        for(int i=0;i<stack_dep;i++)
+          log_write(" ");
+      #endif
+    log_write(ASNI_FMT("[device][r] <%s+%02x>\n",ASNI_FG_RED),map->name,offset);
+  #endif
   word_t ret = host_read(map->space + offset, len);
   return ret;
 }
@@ -52,4 +63,11 @@ void map_write(paddr_t addr, int len, word_t data, IOMap *map) {
   paddr_t offset = addr - map->low;
   host_write(map->space + offset, len, data);
   invoke_callback(map->callback, offset, len, true);
+  #if CONFIG_DTRACE
+    #if CONFIG_FTRACE
+        for(int i=0;i<stack_dep;i++)
+          log_write(" ");
+      #endif
+    log_write(ASNI_FMT("[device][w] <%s+%x>\n",ASNI_FG_RED),map->name,offset);
+  #endif
 }

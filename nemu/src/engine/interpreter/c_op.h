@@ -10,12 +10,20 @@
 #define c_and(a, b) ((a) & (b))
 #define c_or(a, b)  ((a) | (b))
 #define c_xor(a, b) ((a) ^ (b))
+#define c_neg(a) (-(a))
 #define c_sll(a, b) ((a) << ((b) & c_shift_mask))
 #define c_srl(a, b) ((a) >> ((b) & c_shift_mask))
 #define c_sra(a, b) ((sword_t)(a) >> ((b) & c_shift_mask))
 
+#define c_inv(a) (~a)
+
 #ifdef CONFIG_ISA64
 #define c_sext32to64(a) ((int64_t)(int32_t)(a))
+#define c_sext16to64(a) ((int64_t)(int16_t)(a))
+#define c_sext8to64(a)  ((int64_t)(int8_t)(a))
+#define c_zext32to64(a) ((uint64_t)(uint32_t)(a))
+#define c_zext16to64(a) ((uint64_t)(uint16_t)(a))
+#define c_zext8to64(a) ((uint64_t)(uint8_t)(a))
 #define c_addw(a, b) c_sext32to64((a) + (b))
 #define c_subw(a, b) c_sext32to64((a) - (b))
 #define c_sllw(a, b) c_sext32to64((uint32_t)(a) << ((b) & 0x1f))
@@ -57,6 +65,24 @@ static inline bool interpret_relop(uint32_t relop, const rtlreg_t src1, const rt
     case RELOP_GTU: return src1 > src2;
     case RELOP_GEU: return src1 >= src2;
     default: panic("unsupport relop = %d", relop);
+  }
+}
+
+static inline rtlreg_t c_sext(const rtlreg_t src, const int width){
+  switch (width) {
+    case 1: return c_sext8to64(src);
+    case 2: return c_sext16to64(src);
+    case 4: return c_sext32to64(src);
+    default: MUXDEF(CONFIG_RT_CHECK, assert(0), return 0);
+  }
+}
+
+static inline rtlreg_t c_zext(const rtlreg_t src, const int width){
+  switch (width) {
+    case 1: return c_zext8to64(src);
+    case 2: return c_zext16to64(src);
+    case 4: return c_zext32to64(src);
+    default: MUXDEF(CONFIG_RT_CHECK, assert(0), return 0);
   }
 }
 

@@ -27,25 +27,38 @@ LDFLAGS := -O2 $(LDFLAGS)
 
 OBJS = $(SRCS:%.c=$(OBJ_DIR)/%.o) $(CXXSRC:%.cc=$(OBJ_DIR)/%.o)
 
+# Export MACROS
+MACROS = $(SRCS:%.c=$(OBJ_DIR)/%.i) $(CXXSRC:%.cc=$(OBJ_DIR)/%.i)
+
 # Compilation patterns
 $(OBJ_DIR)/%.o: %.c
 	@echo + CC $<
 	@mkdir -p $(dir $@)
 	@$(CC) $(CFLAGS) -c -o $@ $<
-	$(call call_fixdep, $(@:.o=.d), $@)
+	@$(call call_fixdep, $(@:.o=.d), $@)
 
 $(OBJ_DIR)/%.o: %.cc
 	@echo + CXX $<
 	@mkdir -p $(dir $@)
 	@$(CXX) $(CFLAGS) $(CXXFLAGS) -c -o $@ $<
-	$(call call_fixdep, $(@:.o=.d), $@)
+	@$(call call_fixdep, $(@:.o=.d), $@)
+
+$(OBJ_DIR)/%.i: %.c
+	@echo + CC $<
+	@mkdir -p $(dir $@)
+	@$(CC) $(CFLAGS) -E -o $@ $<
+
+$(OBJ_DIR)/%.i: %.cc
+	@echo + CC $<
+	@mkdir -p $(dir $@)
+	@$(CXX) $(CFLAGS) $(CXXFLAGS) -E -o $@ $<
 
 # Depencies
 -include $(OBJS:.o=.d)
 
 # Some convenient rules
 
-.PHONY: app clean
+.PHONY: app clean macros
 
 app: $(BINARY)
 
@@ -55,3 +68,5 @@ $(BINARY): $(OBJS) $(ARCHIVES)
 
 clean:
 	-rm -rf $(BUILD_DIR)
+
+macros: $(MACROS)

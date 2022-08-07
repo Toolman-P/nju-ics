@@ -21,6 +21,9 @@ Context* __am_irq_handle(Context *c) {
             break;
         }
         break;
+      case MCAUSE_TIMER:
+        ev.event = EVENT_IRQ_TIMER;
+        break;
       default:
         ev.event = EVENT_ERROR;
         break;
@@ -53,6 +56,7 @@ Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
   cp->mepc = (uintptr_t)entry;
   cp->a0 = (uintptr_t)arg;
   cp->pdir = NULL;
+  cp->mstatus = (1ul<<7ul) | (1ul<<3ul);
   return cp;
 }
 

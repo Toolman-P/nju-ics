@@ -17,6 +17,7 @@ struct Context {
 
 
 #define MCAUSE_ECALL 11
+#define MCAUSE_TIMER 0x8000000000000007ul
 #define INTR_YIELD -1
 
 #endif

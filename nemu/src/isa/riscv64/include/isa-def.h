@@ -8,6 +8,7 @@ typedef struct {
     uint64_t _64;
   } gpr[32],csr[4096];
   vaddr_t pc;
+  bool INTR;
 } riscv64_CPU_state;
 
 // decode
@@ -71,8 +72,9 @@ typedef struct {
 
 int isa_mmu_check(vaddr_t vaddr, int len, int type);
 
-enum{
-  INTR_ECALL = 11
-};
+
+#define INTR_ECALL 11ul
+#define INTR_TIMER 0x8000000000000007ul
+
 
 #endif

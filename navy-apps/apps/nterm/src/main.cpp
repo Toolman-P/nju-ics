@@ -16,7 +16,7 @@ static inline void clear_display(void) {
 
 int main(int argc, char *argv[]) {
   SDL_Init(0);
-  setenv("PATH","/bin",0);
+  setenv("PATH","/bin:/usr/bin",0);
   font = new BDF_Font(font_fname);
 
   // setup display

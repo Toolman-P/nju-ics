@@ -4,7 +4,6 @@
 #include <SDL.h>
 
 char handle_key(SDL_Event *ev);
-
 static void sh_printf(const char *format, ...) {
   static char buf[256] = {};
   va_list ap;
@@ -53,8 +52,8 @@ static void copy_args(char *args,const char *cmd){
 }
 
 static void sh_handle_cmd(const char *cmd) {
-  char args[256] = {'\0'};
-  char *argv[256] = {NULL};
+  static char args[256] = {'\0'};
+  static char *argv[256] = {NULL};
   char **ap = argv;
 
   copy_args(args,cmd);
@@ -72,15 +71,17 @@ static void sh_handle_cmd(const char *cmd) {
       cmd_table[i].handler(arg + strlen(arg) + 1); //maybe need further parsing
       return;
     }
-  printf("no command found");
+
   do{
     *ap++ = arg;
     arg = strtok(NULL," ");
   }while(arg != NULL);
   
+  for(ap = argv;*ap;ap++)
+    printf("%s\n",*ap);
+
   if(execvp(argv[0],argv))
     sh_printf("No command found!\n");
-  
 }
 
 void builtin_sh_run() {

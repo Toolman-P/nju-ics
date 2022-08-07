@@ -5,10 +5,10 @@
 
 #if !defined(__ISA_NATIVE__) || defined(__NATIVE_USE_KLIB__)
 
-int itoa(int a,char *str){
+int itoa(uintptr_t a,char *str,int base){
   static char buf[150];
   char *bp = buf,*sp = str;
-  int cnt = 0;
+  int cnt = 0,rem;
 
   if(a==0){
     *str='0';
@@ -17,8 +17,14 @@ int itoa(int a,char *str){
   }
 
   while(a){
-    *bp++=a%10+'0';
-    a/=10;cnt++;
+    rem = a % base;
+    if(rem >= 0 && rem <= 9)
+      *bp++=rem+'0';
+    else if(rem>=10&&rem<=15)
+      *bp++=rem-10+'a';
+    else
+      assert(0);
+    a/=base;cnt++;
   }
   bp = buf+cnt;
   while(bp!=buf)
@@ -43,13 +49,19 @@ int printf(const char *fmt, ...) {
           cnt++;
           break;
         case 'd':
-          cnt+=itoa(va_arg(ap,int),buf);
+          cnt+=itoa((uintptr_t)va_arg(ap,int),buf,10);
           putstr(buf);
           break;
         case 's':
           pt=va_arg(ap,char *);
           cnt+=strlen(pt);
           putstr(pt);
+          break;
+        case 'p':
+          cnt+=itoa((uintptr_t)va_arg(ap,void *),buf,16);
+          cnt+=2;
+          putstr("0x");
+          putstr(buf);
           break;
         default:
           putch(*fp);
@@ -78,7 +90,7 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
           cnt++;
           break;
         case 'd':
-          cnt+=itoa(va_arg(ap,int),buf);
+          cnt+=itoa(va_arg(ap,int),buf,10);
           for(pt=buf;*pt;op++,pt++)
             *op=*pt;
           break;

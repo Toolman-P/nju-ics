@@ -3,8 +3,11 @@
 #include <setjmp.h>
 #include <sys/time.h>
 #include <assert.h>
+#include <errno.h>
 #include <time.h>
 #include "syscall.h"
+
+#define ENABLE_BRK 1
 
 // helper macros
 #define _concat(x, y) x ## y
@@ -40,7 +43,7 @@
 #error _syscall_ is not implemented
 #endif
 extern char end; //brk_end
-static intptr_t brk = (intptr_t)&end;
+static void * brk = (void *)&end;
 intptr_t _syscall_(intptr_t type, intptr_t a0, intptr_t a1, intptr_t a2) {
   register intptr_t _gpr1 asm (GPR1) = type;
   register intptr_t _gpr2 asm (GPR2) = a0;
@@ -65,11 +68,15 @@ int _write(int fd, void *buf, size_t count) {
 }
 
 void *_sbrk(intptr_t increment) {
-  if(_syscall_(SYS_brk,brk+increment,0,0))
+#if ENABLE_BRK
+  if(_syscall_(SYS_brk,(intptr_t)(brk+increment),0,0) == -1)
     return (void *)-1;
-  intptr_t ret = brk;
+  void *ret = brk;
   brk += increment;
-  return (void *)ret;
+  return ret;
+#else
+  return (void *)-1;
+#endif
 }
 
 int _read(int fd, void *buf, size_t count) {
@@ -89,7 +96,12 @@ int _gettimeofday(struct timeval *tv, struct timezone *tz) {
 }
 
 int _execve(const char *fname, char * const argv[], char *const envp[]) {
-  return _syscall_(SYS_execve,(intptr_t)fname,(intptr_t)argv,(intptr_t)envp);
+  extern int errno;
+  if(_syscall_(SYS_execve,(intptr_t)fname,(intptr_t)argv,(intptr_t)envp) == -2){
+    errno=ENOENT;
+    return -1;
+  }
+  return 0;
 }
 
 // Syscalls below are not used in Nanos-lite.

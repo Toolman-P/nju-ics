@@ -69,7 +69,7 @@ typedef struct {
   } instr;
 } riscv64_ISADecodeInfo;
 
-#define isa_mmu_check(vaddr, len, type) (MMU_DIRECT)
+int isa_mmu_check(vaddr_t vaddr, int len, int type);
 
 enum{
   INTR_ECALL = 11

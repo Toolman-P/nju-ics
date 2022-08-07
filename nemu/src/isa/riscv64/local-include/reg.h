@@ -8,7 +8,8 @@ enum{
   REG_MSTATUS = 0x300,
   REG_MTVEC = 0x305,
   REG_MEPC = 0x341,
-  REG_MCAUSE = 0x342
+  REG_MCAUSE = 0x342,
+  REG_SATP = 0x180
 };
 
 static inline int check_reg_idx(int idx) {
@@ -20,6 +21,7 @@ static inline int check_csr_idx(int idx){
   IFDEF(CONFIG_RT_CHECK,assert(idx >=0 && idx<4096));
   return idx;
 }
+
 #define gpr(idx) (cpu.gpr[check_reg_idx(idx)]._64)
 #define csr(idx) (cpu.csr[check_csr_idx(idx)]._64)
 
@@ -27,6 +29,7 @@ static inline int check_csr_idx(int idx){
 #define mcause &csr(REG_MCAUSE)
 #define mstatus &csr(REG_MSTATUS)
 #define mepc &csr(REG_MEPC)
+#define satp &csr(REG_SATP)
 #define rsys &gpr(REG_SYS)
 
 static inline const char* reg_name(int idx, int width) {

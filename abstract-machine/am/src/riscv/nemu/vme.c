@@ -116,5 +116,6 @@ Context *ucontext(AddrSpace *as, Area kstack, void *entry) {
   cp->mepc = (uintptr_t)entry;
   cp->pdir = as->ptr;
   cp->mstatus = (1ul<<3ul) | (1ul<<7ul);
+  cp->np = USER_MODE;
   return cp;
 }
